@@ -5,7 +5,6 @@
 
 int main(int argc, char *argv[])
 {
-	int		i;
 	int		fd;
 	char	*line;
 
@@ -21,16 +20,13 @@ int main(int argc, char *argv[])
 		return (2);
 	}
 
-	i = 0;
-	while (i < 10)
+	line = get_next_line(fd);
+	while (line != NULL)
 	{
-		line = get_next_line(fd);
-		if (line == NULL)
-			break ;
 		printf("main(): get_next_line(fd) = \"%s\"\n", line);
 		free(line);
 		line = NULL;
-		i++;
+		line = get_next_line(fd);
 	}
 
 	return (0);

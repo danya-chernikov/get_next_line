@@ -153,7 +153,7 @@ char	*get_next_line(int fd)
 				i = 0;
 				while (i < line_len)
 				{
-					line[line_pos - line_len + i] = buf[buf_pos - line_len + i];
+					line[line_pos - line_len + i] = buf[(buf_pos + 1) - line_len + i];
 					i++;
 				}
 				line[line_pos - line_len + i] = '\0';
