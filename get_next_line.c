@@ -47,10 +47,11 @@ char	*get_next_line(int fd)
 	static int		buf_pos = 0;
 
 	static int		call_num = 1;
-	static int		lines_num = 1; // number of lines found
+	static int		lines_num = 0; // number of lines found
 	
-	size_t			i;
 	static int		rlen;
+
+	size_t			i;
 	size_t			line_len;
 	size_t			buf_size;
 
@@ -132,14 +133,14 @@ char	*get_next_line(int fd)
 				i = 0;
 				while (i < line_len)
 				{
-					line[line_pos - line_len + i] = buf[buf_pos - line_len + i];
+					line[line_pos - line_len + i] = buf[(buf_pos + 1) - line_len + i];
 					i++;
 				}
 
 				buf_pos = 0;
 				cont_f = 0; // we need to read again
 				alloc_f = 1; // we need to augment the amount of memory
-				line_pos++; // It's important! We are at the joint
+				//line_pos++; // It's important! We are at the joint
 
 				continue ;
 				
