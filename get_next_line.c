@@ -100,6 +100,8 @@ char	*get_next_line(int fd)
 		// If we found a new line character
 		if (buf[buf_pos] == '\n')
 		{
+			if (rlen < buf_size)
+				buf_pos++;
 			// Let's save and return the found line
 			//copy_line(buf, line, line_pos, line_len);
 			i = 0;
@@ -108,12 +110,18 @@ char	*get_next_line(int fd)
 				line[line_pos - line_len + i] = buf[buf_pos - line_len + i];
 				i++;
 			}
-			line[line_pos - line_len + i] = '\n';
-			line[line_pos - line_len + i + 1] = '\0';
+			if (rlen == buf_size)
+			{
+				line[line_pos - line_len + i] = '\n';
+				line[line_pos - line_len + i + 1] = '\0';
+			}
+			else
+				line[line_pos - line_len + i] = '\0';
 
 			line_pos = 0;
 			alloc_f = 0;
-			cont_f = 1; // We'll have to continue processing the resting buffer's content
+			if (rlen == buf_size)
+				cont_f = 1; // We'll have to continue processing the resting buffer's content
 			buf_pos++; // It's important! Otherwise we'll start with '\n' on the next call
 
 			lines_num++;
