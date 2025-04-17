@@ -1,156 +1,115 @@
 #include "get_next_line.h"
 
-/* Returns next line read from
- * a file.
- *
- *     li            - line index;
- *
- *     bpos          - position in
- *					   a buffer where
- *                     the function
- *                     found '\n' on
- *                     previous call;
- *
- *     rlen          - number of bytes
- *				       actually read;
- *
- *     line          - line returned;
- *
- *     buf           - buffer for read()
- *				       function;
- *
- *     sline         - line length;
- *
- *     cont_f        - flag showing if
- *				       we should continue
- *				       adding symbols that
- *					   were read during the
- *				       current call to the
- *				       resulting line or not;
- *
- *     lines_num     - number of lines found;
- *
- *     cur_line_size - the total amount of memory
- *					   that is involved to store
- *					   the current string. */
 char	*get_next_line(int fd)
 {
-	static char		buf[BUFFER_SIZE + 1];
-	static char		*line = NULL;
-	static int		cont_f = 0;
-	static int		alloc_f = 0;
-	static int		line_pos = 0;
-	static int		buf_pos = 0;
-	static int		read_cnt = 0;
-	static int		rlen;
+	static char		buf[BUFFER_SIZE + 1]; // buffer for storing read content from `fd`
 
-	size_t			i;
-	size_t			line_len;
-	size_t			buf_size;
+	static char		*line = NULL; // returned line
 
+	static int		buf_pos = 0; // buffer position
+	static int		line_pos = 0; // line position
+
+	static int		read_f = 1; // 0 - do not read from `fd`; 1 - read from `fd`
+	static int		alloc_f = 0; // 0 - use malloc() for a newly created string; 1 - use realloc()
+	static int		end_f = 0;
+
+	static int		rlen; // number of bytes read from `fd`
+	
+	size_t			i; // auxiliary counter
+	size_t			line_len; // length of the read (sub)line
+	size_t			buf_size; // the same as BUFFER_SIZE
+	
 	if (!BUFFER_SIZE)
-		buf_size = 1;
+		buf_size = 1; // default value
 	else
 		buf_size = BUFFER_SIZE;
 
+	if (buf_pos >= rlen && buf_pos > 0 && rlen > 0)
+		return (NULL);
+
 	while (1)
 	{
-		if (!cont_f)
+		if (read_f) // we must read from the file
 		{
 			rlen = 0;
-			rlen = read(fd, buf, buf_size);
-			if (rlen <= 0)
+			rlen = read(fd, buf, buf_size); // read a chunk of data of `buf_size` size
+			if (rlen <= 0) // reading error or end of file
 				break ;
-			read_cnt++;
 		}
+
+		// let's search for any LF occurence
 		i = 0;
-		while (buf[buf_pos] != '\n' && buf_pos < rlen - 1)
+		// let's call it "init loop"
+		while (buf[buf_pos] != '\n'
+			&& buf_pos < rlen) // LF symbol may not be found at all
 		{
 			buf_pos++;
 			i++;
 		}
 		line_len = i;
-		if (buf_pos == rlen - 1)
-			line_len++;
 		line_pos += line_len;
 
-		if (!alloc_f)
+		if (!alloc_f) // if the found line is the first line in this chunk
 			line = (char *)malloc((line_len + 2) * sizeof (char));
-		else
+		else // the found line is the just a part of the line found earlier
 			line = (char *)ft_realloc(line, (line_pos + 2) * sizeof (char));
 		if (line == NULL)
 			break ;
 
-		if (buf[buf_pos] == '\n')
+		// let's just add this (sub)line to the returned `line` array
+		i = 0;
+		while (i < line_len)
 		{
-			if (rlen < buf_size && read_cnt > 1)
+			line[line_pos - line_len + i] = buf[buf_pos - line_len + i];
+			i++;
+		}
+
+		if (buf_pos == rlen)
+		{
+			buf_pos--; // in order not to exceed the read buffer boundary
+			end_f = 1; // set the flag to indicate that we have reached the end of the read buffer
+		}
+
+		if (buf[buf_pos] == '\n') // we exited from init loop because LF was found
+		{
+			line[line_pos - line_len + i] = '\n';
+			line[line_pos - line_len + i + 1] = '\0';
+
+			line_pos = 0; // the next found line will be new one with the updated line_pos
+			alloc_f = 0; // we'll have to allocate memory for the new line again using malloc()
+			read_f = 0; // we do not have to read from `fd` again
+			if (buf_pos == rlen - 1 && end_f) // and only if '\n' stands in the end
+			{
+				buf_pos = 0;
+				read_f = 1; // then yes we'll have to read again
+				end_f = 0;
+			}
+			// if (buf_pos < rlen - 1 && !end_f) ?
+			if (buf_pos < rlen && !end_f) // in current buffer we still have data to proceed
 				buf_pos++;
-			i = 0;
-			while (i < line_len)
-			{
-				line[line_pos - line_len + i] = buf[buf_pos - line_len + i];
-				i++;
-			}
-			if (rlen < buf_size && read_cnt > 1)
-				line[line_pos - line_len + i] = '\0';
-			else
-			{
-				line[line_pos - line_len + i] = '\n';
-				line[line_pos - line_len + i + 1] = '\0';
-			}
-			line_pos = 0;
-			alloc_f = 0;
-			cont_f = 1;
-			buf_pos++;
-			if (rlen < buf_size && read_cnt > 1)
-				cont_f = 0;
 			return (line);
 		}
-		else
+		else // we exited from init loop because we reached the end of the buffer
 		{
-			if (rlen == buf_size)
+			alloc_f = 1; // we'll have to realloc
+			read_f = 1; // we'll have to read again on the next iteration
+			end_f = 0;
+
+			// When we read less than buf_size and did not find any LF
+			if (rlen < buf_size)
 			{
-				i = 0;
-				while (i < line_len)
-				{
-					line[line_pos - line_len + i] = buf[(buf_pos + 1) - line_len + i];
-					i++;
-				}
-				buf_pos = 0;
-				cont_f = 0;
-				alloc_f = 1;
-				continue ;
-				
-			}
-			else
-			{
-				i = 0;
-				while (i < line_len)
-				{
-					line[line_pos - line_len + i] = buf[(buf_pos + 1) - line_len + i];
-					i++;
-				}
 				line[line_pos - line_len + i] = '\0';
 				line_pos = 0;
-				buf_pos = 0;
-				cont_f = 0;
 				alloc_f = 0;
-				return (line);
+				return (line); // the last return (there is nothing more to read)
 			}
+
+			buf_pos = 0;
+
+			continue;
 		}
-	} // while (lines_num < MAX_LINES_NUM)
+		
+	}
 
 	return (NULL);
 }
-
-/*void	copy_line(char *buf, char *line, size_t line_pos, size_t line_len)
-{
-	int	i;
-
-	i = 0;
-	while (i < line_len)
-	{
-		line[line_pos - line_len + i] = buf[buf_pos - line_len + i];
-		i++;
-	}
-}*/
