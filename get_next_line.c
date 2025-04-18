@@ -13,6 +13,7 @@ char	*get_next_line(int fd)
 	static int		read_f = 1; // 0 - do not read from `fd`; 1 - read from `fd`
 	static int		alloc_f = 0; // 0 - use malloc() for a newly created string; 1 - use realloc()
 	static int		end_f = 0;
+	static int		again_f = 0;
 
 	static int		rlen; // number of bytes read from `fd`
 	
@@ -32,6 +33,7 @@ char	*get_next_line(int fd)
 	{
 		if (read_f) // we must read from the file
 		{
+			again_f = 0;
 			buf_pos = 0;
 			rlen = 0;
 			rlen = read(fd, buf, buf_size); // read a chunk of data of `buf_size` size
@@ -89,7 +91,11 @@ char	*get_next_line(int fd)
 			if (buf_pos == rlen - 1 && buf[buf_pos] == '\n') // and only if '\n' stands in the end
 			{
 				read_f = 1; // then yes we'll have to read again
-
+				if (!again_f && buf[buf_pos - 1] == '\n')
+				{
+					again_f = 1;
+					read_f = 0;
+				}
 			}
 			bret += strlen(line);
 			return (line);
