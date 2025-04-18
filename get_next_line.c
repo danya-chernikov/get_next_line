@@ -87,9 +87,10 @@ char	*get_next_line(int fd)
 			end_f = 0;
 			
 			if (buf_pos == rlen - 1 && buf[buf_pos] == '\n') // and only if '\n' stands in the end
+			{
 				read_f = 1; // then yes we'll have to read again
-			else if (buf_pos == rlen - 1 && buf[buf_pos] != '\n') // and only if '\n' stands in the end
-				read_f = 0; // then yes we'll have to read again
+
+			}
 			bret += strlen(line);
 			return (line);
 		}
