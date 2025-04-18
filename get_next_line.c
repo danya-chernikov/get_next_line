@@ -75,18 +75,25 @@ char	*get_next_line(int fd)
 			line[line_pos - line_len + i] = '\n';
 			line[line_pos - line_len + i + 1] = '\0';
 
+			// if (buf_pos < rlen && !end_f) ?
+			if (buf_pos < rlen - 1 && !end_f) // in current buffer we still have data to proceed
+				buf_pos++;
+
 			line_pos = 0; // the next found line will be new one with the updated line_pos
 			alloc_f = 0; // we'll have to allocate memory for the new line again using malloc()
-			read_f = 0; // we do not have to read from `fd` again
-			if (buf_pos == rlen - 1 && end_f) // and only if '\n' stands in the end
+			read_f = 0; // we do not have to read from `fd` again	
+			
+			if (buf_pos == rlen - 1 && buf[buf_pos] == '\n') // and only if '\n' stands in the end
 			{
 				buf_pos = 0;
 				read_f = 1; // then yes we'll have to read again
 				end_f = 0;
 			}
-			// if (buf_pos < rlen - 1 && !end_f) ?
-			if (buf_pos < rlen && !end_f) // in current buffer we still have data to proceed
-				buf_pos++;
+			else if (buf_pos == rlen - 1 && buf[buf_pos] != '\n') // and only if '\n' stands in the end
+			{
+				read_f = 0; // then yes we'll have to read again
+				end_f = 0;
+			}
 			return (line);
 		}
 		else // we exited from init loop because we reached the end of the buffer
