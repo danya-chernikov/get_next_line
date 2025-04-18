@@ -6,8 +6,9 @@ char	*get_next_line(int fd)
 
 	static char		*line = NULL; // returned line
 
-	static int		buf_pos = 0; // buffer position
-	static int		line_pos = 0; // line position
+	static size_t	buf_pos = 0; // buffer position
+	static size_t	line_pos = 0; // line position
+	static size_t	bret = 0; // total number of bytes returned
 
 	static int		read_f = 1; // 0 - do not read from `fd`; 1 - read from `fd`
 	static int		alloc_f = 0; // 0 - use malloc() for a newly created string; 1 - use realloc()
@@ -31,6 +32,7 @@ char	*get_next_line(int fd)
 	{
 		if (read_f) // we must read from the file
 		{
+			buf_pos = 0;
 			rlen = 0;
 			rlen = read(fd, buf, buf_size); // read a chunk of data of `buf_size` size
 			if (rlen <= 0) // reading error or end of file
@@ -82,18 +84,13 @@ char	*get_next_line(int fd)
 			line_pos = 0; // the next found line will be new one with the updated line_pos
 			alloc_f = 0; // we'll have to allocate memory for the new line again using malloc()
 			read_f = 0; // we do not have to read from `fd` again	
+			end_f = 0;
 			
 			if (buf_pos == rlen - 1 && buf[buf_pos] == '\n') // and only if '\n' stands in the end
-			{
-				buf_pos = 0;
 				read_f = 1; // then yes we'll have to read again
-				end_f = 0;
-			}
 			else if (buf_pos == rlen - 1 && buf[buf_pos] != '\n') // and only if '\n' stands in the end
-			{
 				read_f = 0; // then yes we'll have to read again
-				end_f = 0;
-			}
+			bret += strlen(line);
 			return (line);
 		}
 		else // we exited from init loop because we reached the end of the buffer
@@ -108,10 +105,9 @@ char	*get_next_line(int fd)
 				line[line_pos - line_len + i] = '\0';
 				line_pos = 0;
 				alloc_f = 0;
+				bret += strlen(line);
 				return (line); // the last return (there is nothing more to read)
 			}
-
-			buf_pos = 0;
 
 			continue;
 		}
