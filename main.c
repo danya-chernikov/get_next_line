@@ -9,6 +9,7 @@ int main(int argc, char *argv[])
 	int		fd;
 	int		fd2;
 	int		bread;
+	int		nlines;
 	char	*line;
 
 	if (argc < 2)
@@ -29,9 +30,11 @@ int main(int argc, char *argv[])
 	}
 
 	bread = 0;
+	nlines = 0;
 	line = get_next_line(fd);
 	if (line != NULL)
 	{
+		nlines++;
 		bread += strlen(line);
 		write(fd2, line, strlen(line));
 	}
@@ -44,12 +47,14 @@ int main(int argc, char *argv[])
 		line = get_next_line(fd);
 		if (line != NULL)
 		{
+			nlines++;
 			bread += strlen(line);
 			write(fd2, line, strlen(line));
 		}
 	}
 
-	printf("\nbread = %d\n", bread);
+	printf("\nbytes read = %d\n", bread);
+	printf("lines found = %d\n", nlines);
 
 	return (0);
 }
