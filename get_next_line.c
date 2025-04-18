@@ -8,7 +8,6 @@ char	*get_next_line(int fd)
 
 	static size_t	buf_pos = 0; // buffer position
 	static size_t	line_pos = 0; // line position
-	static size_t	bret = 0; // total number of bytes returned
 
 	static int		read_f = 1; // 0 - do not read from `fd`; 1 - read from `fd`
 	static int		alloc_f = 0; // 0 - use malloc() for a newly created string; 1 - use realloc()
@@ -97,7 +96,6 @@ char	*get_next_line(int fd)
 					read_f = 0;
 				}
 			}
-			bret += strlen(line);
 			return (line);
 		}
 		else // we exited from init loop because we reached the end of the buffer
@@ -112,7 +110,6 @@ char	*get_next_line(int fd)
 				line[line_pos - line_len + i] = '\0';
 				line_pos = 0;
 				alloc_f = 0;
-				bret += strlen(line);
 				return (line); // the last return (there is nothing more to read)
 			}
 

@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 	if ((fd2 = open("tests/result", O_WRONLY)) == -1)
 	{
 		perror("Cannot open the file for writing");
+		close(fd);
 		return (3);
 	}
 
@@ -56,5 +57,7 @@ int main(int argc, char *argv[])
 	printf("\nbytes read = %d\n", bread);
 	printf("lines found = %d\n", nlines);
 
+	close(fd);
+	close(fd2);
 	return (0);
 }
