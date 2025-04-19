@@ -3,18 +3,25 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+
+# define EXIT 0
+# define READ 1
+# define ALLOC 2
+# define END 3
+# define AGAIN 4
+# define TRUE 1
+# define FALSE 0
 
 /* get_next_line.c */
 char	*get_next_line(int fd);
 
-int		init(char *buf, char *line, int fd,
-			 int *exit_f, int *read_f, int *again_f,
-			 size_t *rlen, size_t *buf_pos, size_t line_pos, size_t line_len, size_t i);
+int		init(char *buf, char *line,
+			 int *fd,
+			 size_t *rlen, size_t *buf_pos, size_t *line_pos, size_t *line_len, size_t *i,
+			 int *flags)
 
-void	evaluate_chunk(char *buf, size_t *buf_pos,
-		size_t *line_len, size_t *line_pos, size_t rlen);
+int	get_chunk(char *buf, char **line, int *flags, size_t *buf_pos,
+				  size_t *line_pos, size_t *line_len, size_t rlen, size_t *i);
 
 void	process_new_line(char *buf, char *line,
 		int *alloc_f, int *read_f, int *end_f, int *again_f,
@@ -27,10 +34,6 @@ int		process_end_chunk(char *line,
 
 /* get_next_line_utils.c */
 void    *ft_realloc(void *ptr, size_t size);
-
-int		alloc_chunk(char **line, int alloc_f, size_t line_len, size_t line_pos);
-
-void	copy_line(char *buf, char *line, size_t *i, size_t line_pos, size_t buf_pos, size_t line_len);
 
 void	check_reaching_end(size_t *buf_pos, int *end_f, size_t rlen);
 

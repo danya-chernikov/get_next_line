@@ -25,30 +25,9 @@ void    *ft_realloc(void *ptr, size_t size)
 	return (new_ptr);
 }
 
-int	alloc_chunk(char **line, int alloc_f, size_t line_len, size_t line_pos)
+void	check_reaching_end(size_t *buf_pos, int *end_f, size_t *rlen)
 {
-	if (!alloc_f)
-		*line = (char *)malloc((line_len + 2) * sizeof (char));
-	else
-		*line = (char *)ft_realloc(*line, (line_pos + 2) * sizeof (char));
-	if (*line == NULL)
-		return (0);
-	return (1);
-}
-
-void	copy_line(char *buf, char *line, size_t *i, size_t line_pos, size_t buf_pos, size_t line_len)
-{
-	*i = 0;
-	while (*i < line_len)
-	{
-		line[line_pos - line_len + (*i)] = buf[buf_pos - line_len + (*i)];
-		(*i)++;
-	}
-}
-
-void	check_reaching_end(size_t *buf_pos, int *end_f, size_t rlen)
-{
-	if (*buf_pos == rlen)
+	if (*buf_pos == *rlen)
 	{
 		(*buf_pos)--;
 		*end_f = 1;

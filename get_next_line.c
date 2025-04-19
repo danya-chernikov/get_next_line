@@ -9,12 +9,8 @@ char	*get_next_line(int fd)
 	static char		*line = NULL;
 	static size_t	buf_pos = 0;
 	static size_t	rlen = 0;
-	static int		exit_f = 0;
 
-	static int		read_f = 1;
-	static int		alloc_f = 0;
-	static int		end_f = 0;
-	static int		again_f = 0;
+	static int		flags[5];
 
 	static size_t	i = 0;
 	
@@ -23,77 +19,110 @@ char	*get_next_line(int fd)
 
 	int				res;
 	
+	flags[EXIT] = FALSE; // exit_f
+	flags[READ] = TRUE; // read_f
+	flags[ALLOC] = FALSE; // alloc_f
+	flags[END] = FALSE; // end_f
+	flags[AGAIN] = FALSE; // again_f
+	
 	if (buf_pos >= rlen && buf_pos > 0 && rlen > 0)
-		exit_f = 1;
+		flags[0] = 1;
 	while (1)
 	{
-		res = init(buf, line, fd, &exit_f, &read_f, &again_f, &rlen, &buf_pos, line_pos, line_len, i);
+		res = loop_alg(buf, &line, &rlen, &buf_pos, &line_pos, &line_len, &i, &fd, flags);
 		if (res == 1)
 			return (line);
 		else if (res == 2)
 			break ;
-		evaluate_chunk(buf, &buf_pos, &line_len, &line_pos, rlen);
-		if (!alloc_chunk(&line, alloc_f, line_len, line_pos))
-			break ;
-		copy_line(buf, line, &i, line_pos, buf_pos, line_len);
-		check_reaching_end(&buf_pos, &end_f, rlen);
-		if (buf[buf_pos] == '\n')
-		{
-			process_new_line(buf, line, &alloc_f, &read_f, &end_f, &again_f, &buf_pos, &line_pos, line_len, rlen, i);
-			return (line);
-		}
-		else
-		{
-			if (process_end_chunk(line, &alloc_f, &read_f, &end_f, &line_pos, line_len, rlen, i))
-				return (line);
-			continue;
-		}
+		else if (res == 3)
+			continue ;
 	}
 	zero_out(&line, &read_f, &alloc_f, &end_f, &again_f, &exit_f, &buf_pos, &line_pos, &rlen, &i);
 	return (NULL);
 }
 
-int		init(char *buf, char *line, int fd,
-		int *exit_f, int *read_f, int *again_f,
-		size_t *rlen, size_t *buf_pos, size_t line_pos, size_t line_len, size_t i)
+int		loop_alg(char *buf, char **line, size_t *rlen, size_t *buf_pos, size_t *line_pos, size_t *line_len, size_t *i, int *fd, int *flags)
 {
-	if (*exit_f)
+		int	res;
+
+		res = init(buf, line, fd, rlen, buf_pos, line_pos, line_len, i, flags);
+		if (res == 1)
+			return (1);
+		else if (res == 2)
+			return (2);
+		if (!get_chunk(buf, line, flags, buf_pos, line_pos, line_len, rlen, i))
+			return (2);
+		check_reaching_end(&buf_pos, rlen, flags);
+		if (buf[buf_pos] == '\n')
+		{
+			process_new_line(buf, line, &alloc_f, &read_f, &end_f, &again_f, &buf_pos, &line_pos, line_len, rlen, i);
+			return (1);
+		}
+		else
+		{
+			if (process_end_chunk(line, &alloc_f, &read_f, &end_f, &line_pos, line_len, rlen, i))
+				return (1);
+			return (3);
+		}
+		return (0);
+}
+
+int		init(char *buf, char *line,
+			 int *fd,
+			 size_t *rlen, size_t *buf_pos, size_t *line_pos, size_t *line_len, size_t *i,
+			 int *flags)
+{
+	if (flags[EXIT])
 		return (2);
-	if (*read_f)
+	if (flags[READ])
 	{
-		if (*rlen == BUFFER_SIZE && !(*again_f) && buf[(*rlen) - 1] != '\n')
-			*exit_f = 1;
-		*again_f = 0;
+		if (*rlen == BUFFER_SIZE && !flags[AGAIN] && buf[(*rlen) - 1] != '\n')
+			flags[EXIT] = 1;
+		flags[AGAIN] = 0;
 		*buf_pos = 0;
 		*rlen = 0;
-		*rlen = read(fd, buf, BUFFER_SIZE);
+		*rlen = read(*fd, buf, BUFFER_SIZE);
 		if (*rlen <= 0)
 		{
-			if (*exit_f)
+			if (flags[EXIT])
 			{
-				line[line_pos - line_len + i] = '\0';
+				line[*line_pos - *line_len + *i] = '\0';
 				return (1);
 			}
 			return (2);
 		}
-		*exit_f = 0;
+		flags[EXIT] = 0;
 	}
 	return (0);
 }
 
-void	evaluate_chunk(char *buf, size_t *buf_pos,
-					   size_t *line_len, size_t *line_pos, size_t rlen)
+/* It finds the first chunk of data in read buffer,
+ * allocates memory for it and copies its content
+ * into the `line` */
+int	get_chunk(char *buf, char **line, int *flags, size_t *buf_pos,
+				  size_t *line_pos, size_t *line_len, size_t rlen, size_t *i)
 {
-	size_t	i;
-
-	i = 0;
+	*i = 0;
 	while (buf[*buf_pos] != '\n' && *buf_pos < rlen)
 	{
 		(*buf_pos)++;
-		i++;
+		(*i)++;
 	}
 	*line_len = i;
 	*line_pos += *line_len;
+	if (!flags[ALLOC])
+		*line = (char *)malloc((*line_len + 2) * sizeof (char));
+	else
+		*line = (char *)ft_realloc(*line, (*line_pos + 2) * sizeof (char));
+	if (*line == NULL)
+		return (0);
+	*i = 0;
+	while (*i < *line_len)
+	{
+		line[*line_pos - *line_len + (*i)] = buf[*buf_pos - *line_len + (*i)];
+		(*i)++;
+	}
+	return (1);
 }
 
 void	process_new_line(char *buf, char *line,
