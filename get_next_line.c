@@ -15,9 +15,9 @@ char	*get_next_line(int fd)
 	static int		again_f = 0;
 	static int		exit_f = 0;
 
+	static size_t	i; // auxiliary counter
 	static int		rlen; // number of bytes read from `fd`
 	
-	static size_t	i; // auxiliary counter
 	size_t			line_len; // length of the read (sub)line
 	size_t			buf_size; // the same as BUFFER_SIZE
 	
@@ -36,7 +36,7 @@ char	*get_next_line(int fd)
 	{
 		if (read_f) // we must read from the file
 		{
-			if (rlen == buf_size && !again_f)
+			if (rlen == buf_size && !again_f && buf[rlen - 1] != '\n')
 				exit_f = 1;
 			again_f = 0;
 			buf_pos = 0;
