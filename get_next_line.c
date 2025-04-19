@@ -13,10 +13,11 @@ char	*get_next_line(int fd)
 	static int		alloc_f = 0; // 0 - use malloc() for a newly created string; 1 - use realloc()
 	static int		end_f = 0;
 	static int		again_f = 0;
+	static int		exit_f = 0;
 
 	static int		rlen; // number of bytes read from `fd`
 	
-	size_t			i; // auxiliary counter
+	static size_t	i; // auxiliary counter
 	size_t			line_len; // length of the read (sub)line
 	size_t			buf_size; // the same as BUFFER_SIZE
 	
@@ -25,6 +26,9 @@ char	*get_next_line(int fd)
 	else
 		buf_size = BUFFER_SIZE;
 
+	if (exit_f)
+		return (NULL);
+
 	if (buf_pos >= rlen && buf_pos > 0 && rlen > 0)
 		return (NULL);
 
@@ -32,12 +36,22 @@ char	*get_next_line(int fd)
 	{
 		if (read_f) // we must read from the file
 		{
+			if (rlen == buf_size && !again_f)
+				exit_f = 1;
 			again_f = 0;
 			buf_pos = 0;
 			rlen = 0;
 			rlen = read(fd, buf, buf_size); // read a chunk of data of `buf_size` size
 			if (rlen <= 0) // reading error or end of file
+			{
+				if (exit_f)
+				{
+					line[line_pos - line_len + i] = '\0';
+					return (line);
+				}
 				break ;
+			}
+			exit_f = 0;
 		}
 
 		// let's search for any LF occurence
@@ -112,6 +126,7 @@ char	*get_next_line(int fd)
 				alloc_f = 0;
 				return (line); // the last return (there is nothing more to read)
 			}
+			// WHAT IF rlen == buf_size AND THIS IS THE END OF FILE?!
 
 			continue;
 		}
