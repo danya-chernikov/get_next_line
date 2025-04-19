@@ -1,44 +1,104 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   get_next_line.h                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: dchernik <dchernik@student.42urduliz.com>  +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/04/19 19:48:46 by dchernik          #+#    #+#             */
+/*   Updated: 2025/04/20 01:24:51 by dchernik         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
 #include <unistd.h>
 #include <stdlib.h>
 
-# define EXIT 0
-# define READ 1
-# define ALLOC 2
-# define END 3
-# define AGAIN 4
-# define TRUE 1
-# define FALSE 0
+# define EXIT		0
+# define READ		1
+# define ALLOC		2
+# define END		3
+# define AGAIN		4
+
+/* FD   - a file descriptor;
+ * RLEN - bytes read from `fd` (FD);
+ * I    - an auxiliary coutner variable. */
+# define FD			0
+# define BUF_POS	1
+# define LINE_POS	2
+# define RLEN		3
+# define LINE_LEN	4
+# define I			5
+
+/* NORM  - normal execution. Means to do nothing;
+ * RET   - indicate that the `line` must be returned;
+ * BREAK - break from the main loop must be performed;
+ * CONT  - continue must be applied on the main loop. */
+# define NORM		0
+# define RET		1
+# define BREAK		2
+# define CONT		3
 
 /* get_next_line.c */
 char	*get_next_line(int fd);
 
-int		init(char *buf, char *line,
+int		loop_alg(char *buf,
+				 char **line,
+				 size_t *rlen,
+				 size_t *buf_pos,
+				 size_t *line_pos,
+				 size_t *line_len,
+				 size_t *i,
+				 int *fd,
+				 int *flags);
+
+int		init(char *buf,
+			 char **line,
 			 int *fd,
-			 size_t *rlen, size_t *buf_pos, size_t *line_pos, size_t *line_len, size_t *i,
-			 int *flags)
+			 size_t *rlen,
+			 size_t *buf_pos,
+			 size_t *line_pos,
+			 size_t *line_len,
+			 size_t *i,
+			 int *flags);
 
-int	get_chunk(char *buf, char **line, int *flags, size_t *buf_pos,
-				  size_t *line_pos, size_t *line_len, size_t rlen, size_t *i);
+int	get_chunk(char *buf,
+			  char **line,
+			  size_t *buf_pos,
+			  size_t *line_pos,
+			  size_t *line_len,
+			  size_t *rlen,
+			  size_t *i,
+			  int *flags);
 
-void	process_new_line(char *buf, char *line,
-		int *alloc_f, int *read_f, int *end_f, int *again_f,
-		size_t *buf_pos, size_t *line_pos, size_t line_len, size_t rlen, size_t i);
+void	process_new_line(char *buf,
+						 char **line,
+						 size_t *buf_pos,
+						 size_t *line_pos,
+						 size_t *line_len,
+						 size_t *rlen,
+						 size_t *i,
+						 int *flags);
 
-
-int		process_end_chunk(char *line,
-						  int *alloc_f, int *read_f, int *end_f,
-						  size_t *line_pos, size_t line_len, size_t rlen, size_t i);
+int	process_end_chunk(char **line,
+					  size_t *line_pos,
+					  size_t *line_len,
+					  size_t *rlen,
+					  size_t *i,
+					  int *flags);
 
 /* get_next_line_utils.c */
 void    *ft_realloc(void *ptr, size_t size);
 
-void	check_reaching_end(size_t *buf_pos, int *end_f, size_t rlen);
+void	check_reaching_end(size_t *buf_pos, size_t *rlen, int *flags);
 
-void	zero_out(char **line,
-				 int *read_f, int *alloc_f, int *end_f, int *again_f, int *exit_f,
-				 size_t *buf_pos, size_t *line_pos, size_t *rlen, size_t *i);
+void	zero_out(char **line, 
+				 size_t *buf_pos,
+				 size_t *line_pos,
+				 size_t *rlen,
+				 size_t *i,
+				 int *flags);
 
 #endif
