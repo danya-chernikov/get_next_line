@@ -6,7 +6,7 @@
 /*   By: dchernik <dchernik@student.42urduliz.com>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 19:48:44 by dchernik          #+#    #+#             */
-/*   Updated: 2025/04/20 02:47:38 by dchernik         ###   ########.fr       */
+/*   Updated: 2025/04/20 13:32:29 by dchernik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ int	init(char *buf, char **line, long long *v, int *flags)
 
 void	*ft_realloc(void *ptr, size_t size)
 {
-	int				i;
+	size_t			i;
 	unsigned char	*new_ptr;
 
 	if (size == 0 && ptr != NULL)
