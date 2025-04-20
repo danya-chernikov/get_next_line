@@ -6,7 +6,7 @@
 /*   By: dchernik <dchernik@student.42urduliz.com>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 19:48:44 by dchernik          #+#    #+#             */
-/*   Updated: 2025/04/20 13:32:29 by dchernik         ###   ########.fr       */
+/*   Updated: 2025/04/20 15:22:43 by dchernik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,29 +38,51 @@ int	init(char *buf, char **line, long long *v, int *flags)
 	return (NORM);
 }
 
-void	*ft_realloc(void *ptr, size_t size)
+void	*ft_realloc(void *ptr, size_t old_size, size_t new_size)
 {
-	size_t			i;
 	unsigned char	*new_ptr;
+	size_t			copy_size;
+	size_t			i;
 
-	if (size == 0 && ptr != NULL)
+	if (new_size == 0 && ptr != NULL)
 	{
 		free(ptr);
 		return (NULL);
 	}
-	new_ptr = (unsigned char *)malloc(size);
+	new_ptr = (unsigned char *)malloc(new_size);
 	if (new_ptr == NULL)
 		return (NULL);
 	if (ptr == NULL)
 		return (new_ptr);
+	copy_size = new_size;
+	if (old_size < new_size)
+		copy_size = old_size;
 	i = 0;
-	while (i < size)
+	while (i < copy_size)
 	{
 		new_ptr[i] = ((unsigned char *)(ptr))[i];
 		i++;
 	}
 	free(ptr);
 	return (new_ptr);
+}
+
+int	alloc_mem(char **line, long long *v, int *flags)
+{
+	if (!flags[ALLOC])
+	{
+		*line = (char *)malloc((v[LINE_LEN] + 2) * sizeof (char));
+		v[PRIV_MEM_S] = (v[LINE_LEN] + 2) * sizeof (char);
+	}
+	else
+	{
+		*line = (char *)ft_realloc(*line,
+				v[PRIV_MEM_S], (v[LINE_POS] + 2) * sizeof (char));
+		v[PRIV_MEM_S] = (v[LINE_POS] + 2) * sizeof (char);
+	}
+	if (*line == NULL)
+		return (BREAK);
+	return (NORM);
 }
 
 void	check_reaching_end(long long *v, int *flags)

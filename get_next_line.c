@@ -6,11 +6,12 @@
 /*   By: dchernik <dchernik@student.42urduliz.com>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 19:48:41 by dchernik          #+#    #+#             */
-/*   Updated: 2025/04/20 02:45:11 by dchernik         ###   ########.fr       */
+/*   Updated: 2025/04/20 15:23:12 by dchernik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <stdlib.h>
 
 #ifndef BUFFER_SIZE
 # define BUFFER_SIZE 1
@@ -25,7 +26,7 @@ char	*get_next_line(int fd)
 	static char			buf[BUFFER_SIZE];
 	static char			*line = NULL;
 	static int			flags[5] = {0, 1, 0, 0, 0};
-	static long long	v[7];
+	static long long	v[8];
 
 	v[FD] = (long long)fd;
 	if (v[BUF_POS] >= v[RLEN] && v[BUF_POS] > 0 && v[RLEN] > 0)
@@ -83,11 +84,7 @@ int	get_chunk(char *buf, char **line, long long *v, int *flags)
 	}
 	v[LINE_LEN] = v[I];
 	v[LINE_POS] += v[LINE_LEN];
-	if (!flags[ALLOC])
-		*line = (char *)malloc((v[LINE_LEN] + 2) * sizeof (char));
-	else
-		*line = (char *)ft_realloc(*line, (v[LINE_POS] + 2) * sizeof (char));
-	if (*line == NULL)
+	if (alloc_mem(line, v, flags) == BREAK)
 		return (BREAK);
 	v[I] = 0;
 	while (v[I] < v[LINE_LEN])
