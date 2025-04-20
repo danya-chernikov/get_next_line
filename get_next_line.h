@@ -6,15 +6,15 @@
 /*   By: dchernik <dchernik@student.42urduliz.com>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 19:48:46 by dchernik          #+#    #+#             */
-/*   Updated: 2025/04/20 01:24:51 by dchernik         ###   ########.fr       */
+/*   Updated: 2025/04/20 02:48:48 by dchernik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
-#include <unistd.h>
-#include <stdlib.h>
+# include <unistd.h>
+# include <stdlib.h>
 
 # define EXIT		0
 # define READ		1
@@ -24,13 +24,15 @@
 
 /* FD   - a file descriptor;
  * RLEN - bytes read from `fd` (FD);
- * I    - an auxiliary coutner variable. */
+ * I    - an auxiliary coutner variable;
+ * RES  - result of a function execution. */
 # define FD			0
 # define BUF_POS	1
 # define LINE_POS	2
 # define RLEN		3
 # define LINE_LEN	4
 # define I			5
+# define RES		6
 
 /* NORM  - normal execution. Means to do nothing;
  * RET   - indicate that the `line` must be returned;
@@ -43,62 +45,15 @@
 
 /* get_next_line.c */
 char	*get_next_line(int fd);
-
-int		loop_alg(char *buf,
-				 char **line,
-				 size_t *rlen,
-				 size_t *buf_pos,
-				 size_t *line_pos,
-				 size_t *line_len,
-				 size_t *i,
-				 int *fd,
-				 int *flags);
-
-int		init(char *buf,
-			 char **line,
-			 int *fd,
-			 size_t *rlen,
-			 size_t *buf_pos,
-			 size_t *line_pos,
-			 size_t *line_len,
-			 size_t *i,
-			 int *flags);
-
-int	get_chunk(char *buf,
-			  char **line,
-			  size_t *buf_pos,
-			  size_t *line_pos,
-			  size_t *line_len,
-			  size_t *rlen,
-			  size_t *i,
-			  int *flags);
-
-void	process_new_line(char *buf,
-						 char **line,
-						 size_t *buf_pos,
-						 size_t *line_pos,
-						 size_t *line_len,
-						 size_t *rlen,
-						 size_t *i,
-						 int *flags);
-
-int	process_end_chunk(char **line,
-					  size_t *line_pos,
-					  size_t *line_len,
-					  size_t *rlen,
-					  size_t *i,
-					  int *flags);
+int		loop_alg(char *buf, char **line, long long *v, int *flags);
+int		get_chunk(char *buf, char **line, long long *v, int *flags);
+void	process_new_line(char *buf, char **line, long long *v, int *flags);
+int		process_end_chunk(char **line, long long *v, int *flags);
 
 /* get_next_line_utils.c */
-void    *ft_realloc(void *ptr, size_t size);
-
-void	check_reaching_end(size_t *buf_pos, size_t *rlen, int *flags);
-
-void	zero_out(char **line, 
-				 size_t *buf_pos,
-				 size_t *line_pos,
-				 size_t *rlen,
-				 size_t *i,
-				 int *flags);
+int		init(char *buf, char **line, long long *v, int *flags);
+void	*ft_realloc(void *ptr, size_t size);
+void	check_reaching_end(long long *v, int *flags);
+void	clear_func_state(char **line, long long *v, int *flags);
 
 #endif
