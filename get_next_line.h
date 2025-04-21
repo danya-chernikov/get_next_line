@@ -6,7 +6,7 @@
 /*   By: dchernik <dchernik@student.42urduliz.com>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 19:48:46 by dchernik          #+#    #+#             */
-/*   Updated: 2025/04/20 15:22:43 by dchernik         ###   ########.fr       */
+/*   Updated: 2025/04/21 16:55:46 by dchernik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,10 @@
 
 # include <unistd.h>
 # include <stdlib.h>
+
+#ifndef BUFFER_SIZE
+# define BUFFER_SIZE 1
+#endif
 
 # define EXIT		0
 # define READ		1

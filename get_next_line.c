@@ -6,15 +6,11 @@
 /*   By: dchernik <dchernik@student.42urduliz.com>  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/19 19:48:41 by dchernik          #+#    #+#             */
-/*   Updated: 2025/04/20 15:44:30 by dchernik         ###   ########.fr       */
+/*   Updated: 2025/04/21 16:55:46 by dchernik         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-#ifndef BUFFER_SIZE
-# define BUFFER_SIZE 1
-#endif
 
 /* The `v` array was defined as long long
  * to be able to fit into it both variables
